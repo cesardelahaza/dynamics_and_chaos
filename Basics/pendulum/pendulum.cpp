@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <math.h>
+#include <chrono>
 
 int main()
 {
@@ -12,22 +13,27 @@ int main()
 
     
     // Circle
-    sf::CircleShape circle(20);
+    float radius = 20;
+    sf::CircleShape circle(radius);
     circle.setFillColor(sf::Color::White);
-    circle.setPosition({center_x - 20, center_y - 20});
+    circle.setPosition({center_x - radius, center_y - radius});
     // Line
     std::array line =
         {
             sf::Vertex{sf::Vector2f(center_x, 0)}, // the center of circunference
             sf::Vertex{sf::Vector2f(center_x, center_y)}};
-    // Time
-    sf::Clock clock;
+ 
 
     float gravity = 9.8 ;     // meters per second^2 
     float lineLength = 0.1; // meters
 
     float theta = M_PI / 4;
     float omega = 0;
+
+    // Time
+    using clock = std::chrono::high_resolution_clock;
+
+    auto t0 = std::chrono::high_resolution_clock::now();
 
     // run the program as long as the window is open
     while (window.isOpen())
@@ -40,17 +46,22 @@ int main()
                 window.close();
         }
 
-        float dt = 0.00001; // clock.restart().asSeconds(); // delta time
+        auto t1 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> dt = t1 - t0;
+        t0 = t1;
+
+        float deltaTime = dt.count();
+        //float dt = 0.00001; // clock.restart().asSeconds(); // delta time
 
         // Dynamics
         float alpha = -(gravity / lineLength) * std::sin(theta);
-        omega += alpha * dt;
-        theta += omega * dt;
+        omega += alpha * deltaTime;
+        theta += omega * deltaTime;
 
-        circle.setPosition({400 - 20 + lineLength * pixels * std::sin(theta),
-                             - 20 + lineLength * pixels * std::cos(theta)});
+        circle.setPosition({center_x - radius + lineLength * pixels * std::sin(theta),
+                            center_y - radius + lineLength * pixels * std::cos(theta)});
 
-        line[1].position.x = 400 + lineLength * pixels * std::sin(theta);
+        line[1].position.x = center_x + lineLength * pixels * std::sin(theta);
         line[1].position.y =   lineLength * pixels * std::cos(theta);
 
         window.clear();
