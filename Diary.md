@@ -117,7 +117,7 @@ git branch -d name_of_the_undesired_branch
 
 1. Create a .sh file in order to execute the $\texttt{main.cpp}$ file.
 2. Make it executable: $\texttt{chmod +x build.sh}$.
-3. Compile: $\texttt{./build.sh}$.
+3. Compile: $\texttt{./build.sh route\_to\_file}$.
 
 # Basics
 
