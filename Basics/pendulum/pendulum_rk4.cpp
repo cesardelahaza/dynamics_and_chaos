@@ -4,7 +4,7 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "Pendulum - Euler");
+    sf::RenderWindow window(sf::VideoMode({800, 600}), "Pendulum - RK4");
 
     sf::Font font("Arial.ttf");
 
@@ -39,6 +39,10 @@ int main()
     float theta_0 = M_PI / 15;
     float omega_0 = 0;
 
+    // Initial k's
+    float k1_theta = omega_0;
+    float k1_omega = theta_0;
+
     // Run the program as long as the window is open
     while (window.isOpen())
     {
@@ -51,12 +55,27 @@ int main()
         }
 
         // Dynamics
-        float theta;
+        // k's
+        float k2_theta = omega_0 + k1_omega * h /2;
+        float k2_omega = - gravity / lineLength * std::sin(theta_0 + k1_theta * h / 2);
+
+        float k3_theta = omega_0 + k2_omega * h /2;
+        float k3_omega = - gravity / lineLength * std::sin(theta_0 + k2_theta * h / 2);
+
+        float k4_theta = omega_0 + k3_omega * h;
+        float k4_omega = - gravity / lineLength * std::sin(theta_0 + k3_theta * h);
+        
+        // Omega
         float omega;
-        omega = h * (-gravity * std::sin(theta_0) / lineLength) + omega_0;
-        theta = h * omega_0 + theta_0;
+        omega = omega_0 + h * (k1_omega + 2*k2_omega + 2*k3_omega + k4_omega) / 6;
+        // Theta
+        float theta;
+        theta = theta_0 + h * (k1_theta + 2*k2_theta + 2*k3_theta + k4_theta) / 6;
+        
         omega_0 = omega;
-        theta_0 = theta;       
+        theta_0 = theta;  
+        k1_theta = omega_0;
+        k1_omega = - gravity / lineLength * std::sin(theta_0);
 
         float scale = 0.1f; // pixels per meter
         circle.setPosition({center_x - radius + scale * lineLength * pixels * std::sin(theta),
@@ -64,7 +83,7 @@ int main()
 
         line[1].position.x = center_x + scale * lineLength * pixels * std::sin(theta);
         line[1].position.y = scale * lineLength * pixels * std::cos(theta);
-
+            
         float energy = omega*omega / 2 - std::cos(theta);
         text.setString("(not exactly) Energy: " + std::to_string(energy));
 
